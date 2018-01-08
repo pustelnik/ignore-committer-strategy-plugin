@@ -64,10 +64,10 @@
         </developer>
     </developers>
     <scm>
-        <connection>scm:git:git://github.com/Versent/jenkins-${project.artifactId}-plugin.git</connection>
-        <developerConnection>scm:git:git@github.com:Versent/jenkins-${project.artifactId}-plugin.git
+        <connection>scm:git:git://github.com/jenkinsci/jenkins-${project.artifactId}-plugin.git</connection>
+        <developerConnection>scm:git:git@github.com:jenkinsci/jenkins-${project.artifactId}-plugin.git
         </developerConnection>
-        <url>https://github.com/Versent/jenkins-${project.artifactId}-plugin</url>
+        <url>https://github.com/jenkinsci/jenkins-${project.artifactId}-plugin</url>
       <tag>ignore-committer-strategy-1.0.3</tag>
   </scm>
 
