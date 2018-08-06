@@ -41,7 +41,7 @@
     <name>Ignore Committer Strategy</name>
     <description>This plugin provides additional configuration to prevent multi branch projects from triggering new builds
         based on a blacklist of commit authors.</description>
-    <url>https://github.com/Versent/jenkins-${project.artifactId}-plugin</url>
+    <url>https://github.com/jenkinsci/jenkins-${project.artifactId}-plugin</url>
 
     <properties>
         <jenkins.version>2.86</jenkins.version>
@@ -65,7 +65,7 @@
     </developers>
     <scm>
         <connection>scm:git:git://github.com/jenkinsci/jenkins-${project.artifactId}-plugin.git</connection>
-        <developerConnection>scm:git:git@github.com:Versent/jenkins-${project.artifactId}-plugin.git
+        <developerConnection>scm:git:git@github.com:jenkinsci/jenkins-${project.artifactId}-plugin.git
         </developerConnection>
         <url>https://github.com/jenkinsci/jenkins-${project.artifactId}-plugin</url>
       <tag>ignore-committer-strategy-1.0.4</tag>
