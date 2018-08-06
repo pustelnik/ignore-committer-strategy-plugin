@@ -36,7 +36,7 @@
 
     <groupId>au.com.versent.jenkins.plugins</groupId>
     <artifactId>ignore-committer-strategy</artifactId>
-    <version>1.0.4</version>
+    <version>1.0.4-SNAPSHOT</version>
     <packaging>hpi</packaging>
     <name>Ignore Committer Strategy</name>
     <description>This plugin provides additional configuration to prevent multi branch projects from triggering new builds
@@ -68,7 +68,7 @@
         <developerConnection>scm:git:git@github.com:jenkinsci/jenkins-${project.artifactId}-plugin.git
         </developerConnection>
         <url>https://github.com/jenkinsci/jenkins-${project.artifactId}-plugin</url>
-      <tag>ignore-committer-strategy-1.0.4</tag>
+      <tag>HEAD</tag>
   </scm>
 
     <repositories>
