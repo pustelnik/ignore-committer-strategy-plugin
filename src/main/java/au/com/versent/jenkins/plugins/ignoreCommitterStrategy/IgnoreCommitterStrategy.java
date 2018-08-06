@@ -26,22 +26,23 @@ package au.com.versent.jenkins.plugins.ignoreCommitterStrategy;
 
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import hudson.Extension;
+import hudson.model.Job;
+import hudson.scm.SCM;
+import jenkins.model.Jenkins;
+import jenkins.plugins.git.AbstractGitSCMSource;
+import jenkins.scm.api.*;
 import org.kohsuke.stapler.DataBoundConstructor;
 import jenkins.branch.BranchBuildStrategy;
 import jenkins.branch.BranchBuildStrategyDescriptor;
-import jenkins.scm.api.SCMSource;
-import jenkins.scm.api.SCMHead;
 
 import java.util.List;
 import java.util.logging.Logger;
 
-import jenkins.scm.api.SCMFileSystem;
 import jenkins.plugins.git.GitSCMFileSystem;
 
 import java.io.ByteArrayOutputStream;
 import java.io.ByteArrayInputStream;
 
-import jenkins.scm.api.SCMRevision;
 import hudson.plugins.git.GitChangeLogParser;
 import hudson.plugins.git.GitChangeSet;
 import java.util.logging.Level;
@@ -88,7 +89,15 @@ public class IgnoreCommitterStrategy extends BranchBuildStrategy {
         GitSCMFileSystem.Builder builder = new GitSCMFileSystem.BuilderImpl();
 
         try {
-            SCMFileSystem fileSystem = builder.build(source, head, currRevision);
+            SCM scm = source.build(head, currRevision);
+            SCMSourceOwner owner = source.getOwner();
+
+            if (owner == null) {
+                LOGGER.log(Level.SEVERE, "Error retrieving SCMSourceOwner");
+                return true;
+            }
+
+            SCMFileSystem fileSystem = builder.build(owner, scm, currRevision);
 
             if (fileSystem == null) {
                 LOGGER.log(Level.SEVERE, "Error retrieving SCMFileSystem");

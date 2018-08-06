@@ -24,14 +24,31 @@
 package au.com.versent.jenkins.plugins.ignoreCommitterStrategy;
 
 
+import edu.umd.cs.findbugs.annotations.NonNull;
+import hudson.model.Item;
+import hudson.model.ItemGroup;
+import hudson.model.Job;
+import hudson.plugins.git.GitSCM;
+import hudson.scm.SCM;
+import hudson.search.Search;
+import hudson.search.SearchIndex;
+import hudson.security.ACL;
+import jenkins.branch.MultiBranchProject;
 import jenkins.plugins.git.GitSCMSource;
 import jenkins.scm.api.SCMHead;
 
 import static jenkins.plugins.git.AbstractGitSCMSource.SCMRevisionImpl;
 
 import jenkins.plugins.git.GitSCMFileSystem;
+import jenkins.scm.api.SCMSource;
+import jenkins.scm.api.SCMSourceCriteria;
+import jenkins.scm.api.SCMSourceOwner;
+import org.jenkinsci.plugins.workflow.multibranch.WorkflowMultiBranchProject;
+import org.junit.ClassRule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.jvnet.hudson.test.JenkinsRule;
+import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.powermock.api.mockito.PowerMockito;
 import org.powermock.modules.junit4.PowerMockRunner;
@@ -42,14 +59,19 @@ import java.io.ByteArrayOutputStream;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.assertFalse;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Arrays;
 
 import org.junit.Before;
 
+import javax.annotation.Nonnull;
+
 @RunWith(PowerMockRunner.class)
-@PrepareForTest(IgnoreCommitterStrategy.class)
+@PrepareForTest({IgnoreCommitterStrategy.class, GitSCMSource.class})
 public class IgnoreCommitterStrategyTest {
     private SCMHead head;
     private GitSCMSource source;
@@ -57,13 +79,17 @@ public class IgnoreCommitterStrategyTest {
     private SCMRevisionImpl prevRevision;
     private List<String> ignoredAuthors = Arrays.asList("jenkins@example.com", "jenkins-ci@example.com");
     private List<String> nonIgnoredAuthors = Arrays.asList("hello@example.com", "john.galt@whois.com");
+    private SCM scm;
 
     @Before
     public void setUp() {
+        GitSCMSource sourceMock = PowerMockito.mock(GitSCMSource.class);
+
         this.head = new SCMHead("test-branch");
-        this.source = new GitSCMSource("origin");
+        this.source = sourceMock;
         this.currRevision = new SCMRevisionImpl(head, "222");
         this.prevRevision = new SCMRevisionImpl(head, "111");
+        this.scm = new GitSCM("http://example.com.au");
     }
 
     @Test
@@ -137,11 +163,16 @@ public class IgnoreCommitterStrategyTest {
         GitSCMFileSystem.BuilderImpl builderMock = Mockito.mock(GitSCMFileSystem.BuilderImpl.class);
         // mock ByteArrayOutputStream to return preset response
         ByteArrayOutputStream ByteArrayOutputStreamMock = Mockito.mock(ByteArrayOutputStream.class);
+        // mock ownerMock
+        SCMSourceOwner ownerMock = PowerMockito.mock(WorkflowMultiBranchProject.class);
 
         try {
+            PowerMockito.when(source.build(head, currRevision)).thenReturn(scm);
+            PowerMockito.when(source.getOwner()).thenReturn(ownerMock);
+
             // set returns for mocked methods
             Mockito.when(ByteArrayOutputStreamMock.toByteArray()).thenReturn(commits.getBytes());
-            Mockito.when(builderMock.build(source, head, currRevision)).thenReturn(fileSystemMock);
+            Mockito.when(builderMock.build(source.getOwner(), scm, currRevision)).thenReturn(fileSystemMock);
             Mockito.when(fileSystemMock.changesSince(prevRevision, ByteArrayOutputStreamMock)).thenReturn(true);
 
             // mock classes in the tested target class to return mocked  objects when initiated
