@@ -112,7 +112,7 @@ public class IgnoreCommitterStrategy extends BranchBuildStrategy {
 
             ByteArrayOutputStream out = new ByteArrayOutputStream();
 
-            if (currRevision != null && !(currRevision instanceof AbstractGitSCMSource.SCMRevisionImpl)) {
+            if (prevRevision != null && !(prevRevision instanceof AbstractGitSCMSource.SCMRevisionImpl)) {
                 fileSystem.changesSince(new AbstractGitSCMSource.SCMRevisionImpl(head,
                         String.format("%40d", -prevRevision.hashCode()).substring(0, 40).replaceAll(" ", "1")), out);
             } else {
