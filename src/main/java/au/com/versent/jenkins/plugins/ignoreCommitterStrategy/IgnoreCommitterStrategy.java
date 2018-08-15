@@ -99,8 +99,7 @@ public class IgnoreCommitterStrategy extends BranchBuildStrategy {
 
             SCMFileSystem fileSystem;
             if (currRevision != null && !(currRevision instanceof AbstractGitSCMSource.SCMRevisionImpl)) {
-                fileSystem = builder.build(source, head, new AbstractGitSCMSource.SCMRevisionImpl(head,
-                        String.format("%40d", -currRevision.hashCode()).substring(0, 40).replaceAll(" ", "1")));
+                fileSystem = builder.build(source, head, new AbstractGitSCMSource.SCMRevisionImpl(head, currRevision.toString().substring(0,40)));
             } else {
                 fileSystem = builder.build(owner, scm, currRevision);
             }
@@ -113,8 +112,7 @@ public class IgnoreCommitterStrategy extends BranchBuildStrategy {
             ByteArrayOutputStream out = new ByteArrayOutputStream();
 
             if (prevRevision != null && !(prevRevision instanceof AbstractGitSCMSource.SCMRevisionImpl)) {
-                fileSystem.changesSince(new AbstractGitSCMSource.SCMRevisionImpl(head,
-                        String.format("%40d", -prevRevision.hashCode()).substring(0, 40).replaceAll(" ", "1")), out);
+                fileSystem.changesSince(new AbstractGitSCMSource.SCMRevisionImpl(head,prevRevision.toString().substring(0,40)), out);
             } else {
                 fileSystem.changesSince(prevRevision, out);
             }
