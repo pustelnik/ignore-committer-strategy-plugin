@@ -97,7 +97,7 @@ public class IgnoreCommitterStrategy extends BranchBuildStrategy {
                 return true;
             }
 
-            SCMFileSystem fileSystem = builder.build(owner, scm, currRevision);
+            SCMFileSystem fileSystem = builder.build(source, head, new AbstractGitSCMSource.SCMRevisionImpl(head,currRevision.toString()));
 
             if (fileSystem == null) {
                 LOGGER.log(Level.SEVERE, "Error retrieving SCMFileSystem");
