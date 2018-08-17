@@ -97,7 +97,12 @@ public class IgnoreCommitterStrategy extends BranchBuildStrategy {
                 return true;
             }
 
-            SCMFileSystem fileSystem = builder.build(owner, scm, currRevision);
+            SCMFileSystem fileSystem;
+            if (currRevision != null && !(currRevision instanceof AbstractGitSCMSource.SCMRevisionImpl)) {
+                fileSystem = builder.build(source, head, new AbstractGitSCMSource.SCMRevisionImpl(head, currRevision.toString().substring(0,40)));
+            } else {
+                fileSystem = builder.build(owner, scm, currRevision);
+            }
 
             if (fileSystem == null) {
                 LOGGER.log(Level.SEVERE, "Error retrieving SCMFileSystem");
@@ -105,7 +110,13 @@ public class IgnoreCommitterStrategy extends BranchBuildStrategy {
             }
 
             ByteArrayOutputStream out = new ByteArrayOutputStream();
-            fileSystem.changesSince(prevRevision, out);
+
+            if (prevRevision != null && !(prevRevision instanceof AbstractGitSCMSource.SCMRevisionImpl)) {
+                fileSystem.changesSince(new AbstractGitSCMSource.SCMRevisionImpl(head,prevRevision.toString().substring(0,40)), out);
+            } else {
+                fileSystem.changesSince(prevRevision, out);
+            }
+
             GitChangeLogParser parser = new GitChangeLogParser(true);
 
             List<GitChangeSet> logs = parser.parse(new ByteArrayInputStream(out.toByteArray()));
