@@ -24,11 +24,8 @@
 package au.com.versent.jenkins.plugins.ignoreCommitterStrategy;
 
 
-import edu.umd.cs.findbugs.annotations.CheckForNull;
 import hudson.Extension;
-import hudson.model.Job;
 import hudson.scm.SCM;
-import jenkins.model.Jenkins;
 import jenkins.plugins.git.AbstractGitSCMSource;
 import jenkins.scm.api.*;
 import org.kohsuke.stapler.DataBoundConstructor;
@@ -36,6 +33,7 @@ import jenkins.branch.BranchBuildStrategy;
 import jenkins.branch.BranchBuildStrategyDescriptor;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.logging.Logger;
 
 import jenkins.plugins.git.GitSCMFileSystem;
@@ -54,11 +52,13 @@ public class IgnoreCommitterStrategy extends BranchBuildStrategy {
     private static final Logger LOGGER = Logger.getLogger(IgnoreCommitterStrategy.class.getName());
     private final String ignoredAuthors;
     private final Boolean allowBuildIfNotExcludedAuthor;
+    private final Boolean skipBuildIfLastCommiterIsExcludedAuthor;
 
     @DataBoundConstructor
-    public IgnoreCommitterStrategy(String ignoredAuthors, Boolean allowBuildIfNotExcludedAuthor) {
+    public IgnoreCommitterStrategy(String ignoredAuthors, Boolean allowBuildIfNotExcludedAuthor, Boolean skipBuildIfLastCommiterIsExcludedAuthor) {
         this.ignoredAuthors = ignoredAuthors;
         this.allowBuildIfNotExcludedAuthor = allowBuildIfNotExcludedAuthor;
+        this.skipBuildIfLastCommiterIsExcludedAuthor = skipBuildIfLastCommiterIsExcludedAuthor;
     }
 
     /**
@@ -76,6 +76,11 @@ public class IgnoreCommitterStrategy extends BranchBuildStrategy {
      */
     public Boolean getAllowBuildIfNotExcludedAuthor() { return allowBuildIfNotExcludedAuthor; }
 
+    /**
+     * Determine if build is not allowed if last commit author is excluded
+     * @return indicates that build should be skipped if last commit author is in to exclude list
+     */
+    public Boolean getSkipBuildIfLastCommiterIsExcludedAuthor() { return skipBuildIfLastCommiterIsExcludedAuthor; }
     /**
      * Determine if build is required by checking if any of the commit authors is in the ignore list
      * and/or if changesets with at least one non excluded author are allowed
@@ -125,9 +130,20 @@ public class IgnoreCommitterStrategy extends BranchBuildStrategy {
 
             LOGGER.info(String.format("Ignored authors: %s", ignoredAuthorsList.toString()));
 
+            Optional<GitChangeSet> firstCommit = logs.stream().findFirst();
+            if (firstCommit.isPresent() && skipBuildIfLastCommiterIsExcludedAuthor) {
+                GitChangeSet gitChangeSet = firstCommit.get();
+                if (ignoredAuthorsList.contains(gitChangeSet.getAuthorEmail())) {
+                    LOGGER.info(String.format(
+                            "First commit contains ignored author %s (%s), and skipBuildIfLastCommiterIsExcludedAuthor is true, therefore build is not required",
+                            gitChangeSet.getAuthorEmail(), gitChangeSet.getCommitId()));
+                    return false;
+                }
+            }
+
             for (GitChangeSet log : logs) {
                 String authorEmail = log.getAuthorEmail().trim().toLowerCase();
-                Boolean isIgnoredAuthor = ignoredAuthorsList.contains(authorEmail);
+                boolean isIgnoredAuthor = ignoredAuthorsList.contains(authorEmail);
 
                 if (isIgnoredAuthor) {
                     if (!allowBuildIfNotExcludedAuthor) {

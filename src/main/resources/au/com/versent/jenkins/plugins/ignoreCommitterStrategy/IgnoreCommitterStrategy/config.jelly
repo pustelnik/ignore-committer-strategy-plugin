@@ -6,4 +6,7 @@
   <f:entry title="Allow builds when a changeset contains non-ignored author(s)" field="allowBuildIfNotExcludedAuthor">
     <f:checkbox/>
   </f:entry>
+  <f:entry title="Don't trigger build when last commit contains ignored author(s)" field="skipBuildIfLastCommiterIsExcludedAuthor">
+    <f:checkbox/>
+  </f:entry>
 </j:jelly>
